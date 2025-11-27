@@ -1,5 +1,5 @@
 #!/bin/bash
-source $HOME/bin/brew-env.sh
+/usr/bin/which cobc >/dev/null 2>&1 || source $COBENV
 
 PRG=$1
 shift

@@ -3,27 +3,13 @@ PRG=gcob
 VERSION=251123
 if [ $# -ne 1 ];
 then
-  echo "usage: gcob <source.cob>|<source.cbl>"
+  echo "usage: gcob <member>"
   exit 1
 fi
 #
-source $HOME/bin/brew-env.sh
-# CBLNM=$(basename $1 .cbl)
-# COBNM=$(basename $1 .cob)
-# if [ "${CBLNM}" != "$1" ];
-# then
-#   BASENM=$CBLNM
-# fi
-# if [ "${COBNM}" != "$1" ];
-# then
-#   BASENM=$COBNM
-# fi
+/usr/bin/which cobc >/dev/null 2>&1 || source $COBENV
+#
 BASENM=$1
-if [ -z $BASENM ];
-then
-  echo "usage: cob2 <source.cob>|<source.cbl>"
-  exit 1
-fi
 
 source $TYCOBOL/JCL/tycobol.env
 
