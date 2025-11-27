@@ -1,0 +1,27 @@
+      *A-1-B--+----2----+----3----+----4----+----5----+----6----+----7--
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. LAYOUT2.
+       ENVIRONMENT DIVISION.
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+       01  WS-STRUCT.
+           05  WS-HWORD-COMP5      PIC S9(4) COMP-5 SYNC VALUE +12345.
+           05  WS-HWORD-COMP       PIC S9(4) COMP SYNC VALUE +12345.
+           05  WS-HWORD-BIN        PIC S9(4) BINARY SYNC VALUE +12345.
+           05  WS-HWORD-COMP4      PIC S9(4) COMP-4 SYNC VALUE +12345.
+           05  WS-FWORD-COMP5      PIC S9(8) COMP-5 SYNC VALUE +420000.
+           05  WS-FWORD-COMP       PIC S9(8) COMP SYNC VALUE +420000.
+           05  WS-FWORD-BIN        PIC S9(8) BINARY SYNC VALUE +420000.
+           05  WS-FWORD-COMP4      PIC S9(8) COMP-4 SYNC VALUE +420000.
+
+       PROCEDURE DIVISION.
+       AA-MAINLINE SECTION.
+           DISPLAY FUNCTION HEX-OF(WS-HWORD-COMP5) ' '
+                   FUNCTION HEX-OF(WS-HWORD-COMP) ' '
+                   FUNCTION HEX-OF(WS-HWORD-BIN) ' '
+                   FUNCTION HEX-OF(WS-HWORD-COMP4) ' '
+                   FUNCTION HEX-OF(WS-FWORD-COMP5) ' '
+                   FUNCTION HEX-OF(WS-FWORD-COMP) ' '
+                   FUNCTION HEX-OF(WS-FWORD-BIN) ' '
+                   FUNCTION HEX-OF(WS-FWORD-COMP4)
+           STOP RUN.

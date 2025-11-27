@@ -1,0 +1,50 @@
+000000*AA1ABBB+----2----+----3----+----4----+----5----+----6----+----7--SEQUENCE
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. MANIP.
+       AUTHOR. Andras Pahi.
+       DATE-WRITTEN. 11/23/2025.
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+       01 WS-DATE.
+          03 DT-YEAR   PIC 9(2).
+          03 DT-MONTH  PIC 9(2).
+          03 DT-DAY    PIC 9(2).
+       01 WS-DAY    PIC 9(5) VALUE ZEROS.
+       01 WS-DOW    PIC 9 VALUE ZERO.
+       01 WS-TIME.
+          03 HH     PIC 9(2).
+          03 MM     PIC 9(2).
+          03 SS     PIC 9(2)V9(2).
+       01 FMT-DATE.
+          03 DT-MONTH  PIC 9(2).
+          03 FILLER PIC X VALUE '/'.
+          03 DT-DAY    PIC 9(2).
+          03 FILLER PIC X VALUE '/'.
+          03 DT-YEAR   PIC 9(2).
+       01 FMT-DAY   PIC 99/999.
+       01 FMT-TIME.
+          03 HH     PIC 9(2).
+          03 FILLER PIC X VALUE ':'.
+          03 MM     PIC 9(2).
+          03 FILLER PIC X VALUE ':'.
+          03 SS     PIC 99.99.
+       PROCEDURE DIVISION.
+           ACCEPT WS-DATE FROM DATE
+           ACCEPT WS-DAY  FROM DAY
+           ACCEPT WS-DOW  FROM DAY-OF-WEEK
+           ACCEPT WS-TIME FROM TIME
+           DISPLAY 'RAW'
+           DISPLAY '    DATE:=' WS-DATE
+           DISPLAY '    DAY:='  WS-DAY
+           DISPLAY '    DOW:='  WS-DOW
+           DISPLAY '    TIME:=' WS-TIME
+      *-----------------------------------------------------------------
+           MOVE CORRESPONDING WS-DATE TO FMT-DATE
+           MOVE WS-DAY TO FMT-DAY
+           MOVE CORRESPONDING WS-TIME TO FMT-TIME
+           DISPLAY 'FORMATTED'
+           DISPLAY '    DATE:=' FMT-DATE
+           DISPLAY '    DAY:='  FMT-DAY
+           DISPLAY '    TIME:=' FMT-TIME
+           STOP RUN
+           .

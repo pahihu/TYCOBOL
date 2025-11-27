@@ -1,0 +1,49 @@
+      *A-1-B--+----2----+----3----+----4----+----5----+----6----+----7--
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. ABDRIVER.
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+       COPY ECOMPX REPLACING ==:BUS:== BY ==COMP4==
+                             ==:TAG:== BY ==COMP-4==.
+       COPY ECOMPX REPLACING ==:BUS:== BY ==COMP5==
+                             ==:TAG:== BY ==COMP-5==.
+
+       01 E-COMP5-S1 PIC S9(01) USAGE IS COMP-5.
+       01 E-COMP5-S2 PIC S9(02) USAGE IS COMP-5.
+       01 E-COMP5-S3 PIC S9(03) USAGE IS COMP-5.
+       01 E-COMP5-S4 PIC S9(04) USAGE IS COMP-5.
+       01 E-COMP5-S5 PIC S9(05) USAGE IS COMP-5.
+
+       01 E-BIN-CHAR PIC X(02).
+       01 E-PIC99 PIC 99 USAGE IS BINARY.
+       77 WS-TMP PIC 9(02).
+       PROCEDURE DIVISION.
+           DISPLAY '=== COMP-4 ==='
+           DISPLAY 'E-COMP4-1 PIC 9(01)=:' LENGTH OF E-COMP4-1
+           DISPLAY 'E-COMP4-2 PIC 9(02)=:' LENGTH OF E-COMP4-2
+           DISPLAY 'E-COMP4-3 PIC 9(03)=:' LENGTH OF E-COMP4-3
+           DISPLAY 'E-COMP4-4 PIC 9(04)=:' LENGTH OF E-COMP4-4
+           DISPLAY 'E-COMP4-5 PIC 9(05)=:' LENGTH OF E-COMP4-5
+
+           DISPLAY ' '
+           DISPLAY '=== COMP-5 ==='
+           DISPLAY 'E-COMP5-1 PIC 9(01)=:' LENGTH OF E-COMP5-1
+           DISPLAY 'E-COMP5-2 PIC 9(02)=:' LENGTH OF E-COMP5-2
+           DISPLAY 'E-COMP5-3 PIC 9(03)=:' LENGTH OF E-COMP5-3
+           DISPLAY 'E-COMP5-4 PIC 9(04)=:' LENGTH OF E-COMP5-4
+           DISPLAY 'E-COMP5-5 PIC 9(05)=:' LENGTH OF E-COMP5-5
+
+           DISPLAY ' '
+           DISPLAY '=== COMP-5-S ==='
+           DISPLAY 'E-COMP5-S1 PIC S9(01)=:' LENGTH OF E-COMP5-S1
+           DISPLAY 'E-COMP5-S2 PIC S9(02)=:' LENGTH OF E-COMP5-S2
+           DISPLAY 'E-COMP5-S3 PIC S9(03)=:' LENGTH OF E-COMP5-S3
+           DISPLAY 'E-COMP5-S4 PIC S9(04)=:' LENGTH OF E-COMP5-S4
+           DISPLAY 'E-COMP5-S5 PIC S9(05)=:' LENGTH OF E-COMP5-S5
+
+           DISPLAY ' '
+           DISPLAY '=== OTHERS ==='
+           DISPLAY 'E-BIN-CHAR=:' LENGTH OF E-BIN-CHAR
+           DISPLAY 'E-PIC99 BINARY=:' LENGTH OF E-PIC99
+           GOBACK
+           .

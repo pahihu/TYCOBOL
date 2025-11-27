@@ -1,0 +1,36 @@
+#!/bin/bash
+PRG=cob2
+VERSION=251123
+if [ $# -ne 1 ];
+then
+  echo "usage: cob2 <source.cob>|<source.cbl>"
+  exit 1
+fi
+#
+source $HOME/bin/brew-env.sh
+# CBLNM=$(basename $1 .cbl)
+# COBNM=$(basename $1 .cob)
+# if [ "${CBLNM}" != "$1" ];
+# then
+#   BASENM=$CBLNM
+# fi
+# if [ "${COBNM}" != "$1" ];
+# then
+#   BASENM=$COBNM
+# fi
+BASENM=$1
+if [ -z $BASENM ];
+then
+  echo "usage: cob2 <source.cob>|<source.cbl>"
+  exit 1
+fi
+
+source $TYCOBOL/JCL/tycobol.env
+
+
+XOPT="-fdefault-colseq=EBCDIC -fdefaultbyte=0 -fdebugging-line -fno-ec=all -fec=data -fec=size"
+OPT="-fsign=EBCDIC -fno-gen-c-decl-static-call -fsingle-quote -ftsymbols -ftcmd -fmove-noninteger-to-alphanumeric=error -g -d -fno-ec=EC-ALL -fec=EC-DATA -fec=EC-SIZE"
+
+cobc -I $CPY -ext cpy --conf=$CONF --save-temps=$SAVTMP $OPT -Wall -X -T $LST -o $OUT $INP
+
+banner STOP

@@ -1,0 +1,7 @@
+* EC-SIZE-ZERO-DIVIDE set, but not checked automatically needs DIVIDE ... ON SIZE ERROR
+* ibm-strict.conf: arithmetic-osvs no (was yes)
+* when -farithmetic-osvs is in effect
+    COMPUTE X = (Y * 5) + (Z * 7) will be truncated to PIC 9 !!!
+* -fmove-noninteger-to-alphanumeric=error does NOT work
+* Wno-dialect ALWAYS on, but Wall displays a warning for move-noninteger-to-alphanumeric
+* ibm-strict.conf: comment-paragraphs ok (was obsolete)

@@ -1,0 +1,3 @@
+DIR=$PWD
+export TYCOBOL=$DIR
+export PATH=$TYCOBOL/JCL:$PATH

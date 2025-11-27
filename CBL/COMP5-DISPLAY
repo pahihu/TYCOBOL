@@ -1,0 +1,14 @@
+       IDENTIFICATION   DIVISION.
+       PROGRAM-ID.      COMP5-DISPLAY.
+       DATA             DIVISION.
+       WORKING-STORAGE  SECTION.
+       01  X-P1   BINARY-CHAR UNSIGNED   VALUE 234.
+       01  X-P5   PIC 9(2) COMP-5        VALUE 234.
+       01  X-N1   BINARY-CHAR            VALUE -123.
+       01  X-N5   PIC S9(2) COMP-5       VALUE -123.
+       PROCEDURE        DIVISION.
+           DISPLAY 'BINARY-CHAR UNSIGNED   ' FUNCTION HEX-OF(X-P1)
+           DISPLAY 'PIC 9(2) COMP-5        ' FUNCTION HEX-OF(X-P5)
+           DISPLAY 'BINARY-CHAR            ' FUNCTION HEX-OF(X-N1)
+           DISPLAY 'PIC S9(2) COMP-5       ' FUNCTION HEX-OF(X-N5)
+           STOP RUN.

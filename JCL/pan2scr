@@ -1,0 +1,8 @@
+#!/bin/bash
+if [ $# -ne 1 ];
+then
+  echo "usage: pan2scr <panel>"
+  exit 1
+fi
+
+exec awk -f JCL/panel.awk PANLIB/$1 > $1.cbl

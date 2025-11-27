@@ -1,0 +1,177 @@
+Colors
+======
+0 	Black
+1 	Blue
+2	Green
+3	Cyan
+4	Red
+5	Magenta
+6	Brown
+7	White
+
+
+Screen elements
+===============
+- at the group level
+BLANK SCREEN        clear screen
+FOREGROUND-COLOR    colors
+BACKGROUND-COLOR
+SIGN                SEPARATE, LEADING, TRAILING
+USAGE
+AUTO                skip cursor to next
+FULL                needs to fill fully
+SECURE              do not display chars
+REQUIRED            at least one char required
+
+
+Screen Literals
+===============
+- at line column
+BLANK SCREEN
+BLANK LINE
+ERASE EOS|EOL
+FOREGROUND-COLOR
+BACKGROUND-COLOR
+BLINK
+HIGHLIGHT
+LOWLIGHT
+REVERSE-VIDEO
+UNDERLINE
+BELL
+
+
+Using FROM|TO|USING
+===================
+AUTO
+REQUIRED
+SECURE
+FULL
+BLANK LINE
+BLANK SCREEN
+ERASE EOS|EOL
+FOREGROUND-COLOR
+BACKGROUND-COLOR
+HIGHLIGHT
+LOWLIGHT
+UNDERLINE
+BLINK
+BELL
+SIGN
+USAGE
+PICTURE
+JUSTIFIER RIGHT
+BLANK WHEN ZERO
+
+
+
+
+
+
+SCREEN SECTION.
+
+level-number [ identifier-1 | FILLER ]
+                               ~~~~~~
+ [ AUTO | AUTO-SKIP | AUTOTERMINATE ] [ BELL | BEEP ]
+   ~~~~   ~~~~~~~~~   ~~~~~~~~~~~~~     ~~~~   ~~~~
+ [ BACKGROUND-COLOR|BACKGROUND-COLOUR IS integer-1 | identifier-2 ]
+   ~~~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~
+ [ BLANK LINE|SCREEN ] [ ERASE EOL|EOS ]
+   ~~~~~ ~~~~ ~~~~~~     ~~~~~ ~~~ ~~~
+ [ BLANK WHEN ZERO ] [ JUSTIFIED RIGHT ]
+   ~~~~~      ~~~~     ~~~~
+ [ BLINK ] [ HIGHLIGHT | LOWLIGHT ] [ REVERSE-VIDEO ]
+   ~~~~~     ~~~~~~~~~   ~~~~~~~~     ~~~~~~~~~~~~~
+ [ COLUMN NUMBER IS [ +|PLUS ] integer-2 | identifier-3 ]
+   ~~~                  ~~~~
+ [ FOREGROUND-COLOR|FOREGROUND-COLOUR IS integer-3 | identifier-4 ]
+   ~~~~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~
+ [ { FROM literal-1 | identifier-5 } ]
+   { ~~~~                          }
+   { TO identifier-5               }
+   { ~~                            }
+   { USING identifier-5            }
+   { ~~~~~                         }
+   { VALUE IS [ ALL ] literal-1    }
+     ~~~~~      ~~~
+ [ FULL | LENGTH-CHECK ] [ REQUIRED | EMPTY-CHECK ] [ SECURE | NO-ECHO ]
+   ~~~~   ~~~~~~~~~~~~     ~~~~~~~~   ~~~~~~~~~~~     ~~~~~~   ~~~~~~~
+ [ LEFTLINE ] [ OVERLINE ] [ UNDERLINE ]
+   ~~~~~~~~     ~~~~~~~~     ~~~~~~~~~
+ [ LINE NUMBER IS [ +|PLUS ] integer-4 | identifier-6 ]
+   ~~~~               ~~~~
+ [ OCCURS integer-5 TIMES ]
+   ~~~~~~
+ [ PICTURE IS picture-string ]
+   ~~~
+ [ PROMPT [ CHARACTER IS literal-2 | identifier-7 ]
+   ~~~~~~   ~~~~~~~~~
+ [ SIGN IS LEADING|TRAILING [ SEPARATE CHARACTER ] ]
+   ~~~~    ~~~~~~~ ~~~~~~~~   ~~~~~~~~
+ . [ SCREEN-SECTION-Data-Item ]...
+
+
+ACCEPT { identifier-1 }
+   ~~~~~~
+          { OMITTED      }
+            ~~~~~~~
+                           [{ FROM EXCEPTION-STATUS }]
+                              ~~~~ ~~~~~~~~~~~~~~~~
+                           [{ FROM CRT ] [ MODE IS BLOCK ]}
+                              ~~~~ ~~~     ~~~~    ~~~~~
+
+          [ AT { | LINE NUMBER { integer-1    }                | } ]
+            ~~ { | ~~~~        { identifier-2 }                | }
+               { | COLUMN|COL|POSITION|POS NUMBER { integer-2    }
+               { | ~~~~~~ ~~~ ~~~~~~~~ ~~~        { identifier-3 }
+               {                                                 }
+               { { integer-3    }                                }
+               { { identifier-4 }                                }
+
+          [ WITH [ Attribute-Specification ]...
+            ~~~~
+                 [ LOWER|UPPER ]
+                   ~~~~~ ~~~~~
+                 [ SCROLL { UP   } [ { integer-4    } LINE|LINES ] ]
+                   ~~~~~~ { ~~   }   { identifier-5 }
+                          { DOWN }
+                            ~~~~
+                 [ TIMEOUT|TIME-OUT AFTER { integer-5    } ]
+                   ~~~~~~~ ~~~~~~~~       { identifier-6 }
+                 [ CONVERSION ]
+                   ~~~~~~~~~~
+                 [ UPDATE ]
+                   ~~~~~~
+                 [ SIZE  { integer-6    } ]
+                   ~~~~  { identifier-7 }
+          [ ON EXCEPTION imperative-statement-1 ]
+               ~~~~~~~~~
+          [ NOT ON EXCEPTION imperative-statement-2 ]
+            ~~~    ~~~~~~~~~
+ [ END-ACCEPT ]
+   ~~~~~~~~~~
+
+
+
+DISPLAY identifier-1 [ UPON CRT|CRT-UNDER ]
+   ~~~~~~~                ~~~~ ~~~ ~~~~~~~~~
+       [ AT { | LINE NUMBER { integer-1    }            | } ]
+         ~~ { | ~~~~        { identifier-2 }            | }
+            { | COLUMN|COL|POSITION|POS NUMBER { integer-2    }
+            { | ~~~~~~ ~~~ ~~~~~~~~ ~~~        { identifier-3 }
+            {                                             }
+            { { integer-3    }                            }
+            { { identifier-4 }                            }
+
+       [ WITH [ Attribute-Specification ]...
+         ~~~~
+              [ SCROLL { UP   } [ { integer-4    } LINE|LINES ] ]
+                ~~~~~~ { ~~   }   { identifier-5 }
+                       { DOWN }
+                         ~~~~
+              [ SIZE { integer-5    }
+                ~~~~ { identifier-6 }  ]
+       [ ON EXCEPTION imperative-statement-1 ]
+            ~~~~~~~~~
+       [ NOT ON EXCEPTION imperative-statement-2 ]
+         ~~~    ~~~~~~~~~
+ [ END-DISPLAY ]

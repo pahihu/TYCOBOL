@@ -1,0 +1,9 @@
+#!/bin/bash
+source $HOME/bin/brew-env.sh
+
+PRG=$1
+shift
+
+DIR=$PWD
+export COB_LIBRARY_PATH=$DIR/LOADLIB:$DYLD_LIBRARY_PATH
+exec cobcrun -c $DIR/JCL/cob2_runtime.cfg $PRG $*
