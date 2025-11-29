@@ -1,0 +1,42 @@
+000000*AA1ABBB+----2----+----3----+----4----+----5----+----6----+----7--SEQUENCE
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. STRMAN2.
+       AUTHOR. Andras Pahi.
+       ENVIRONMENT DIVISION.
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+       DATA DIVISION.
+       FILE SECTION.
+       WORKING-STORAGE SECTION.
+       01 WS-STR          PIC X(20) VALUE 'TEST FIELD'.
+       01 WS-STR-POINTER  PIC 9(02) VALUE ZEROS.
+       01 PHONE-NUMBER.
+          03 AREA-CODE      PIC 999     VALUE 409.
+          03 PREFIX-NUM     PIC 999     VALUE 555.
+          03 LAST-FOUR      PIC 9(4)    VALUE 1212.
+       01 FORMATTED-NUMBER  PIC X(14)   VALUE SPACES.
+      *-----------------------------------------------------------------
+       PROCEDURE DIVISION.
+           MOVE 6 TO WS-STR-POINTER
+           STRING 'FILES' DELIMITED BY SIZE
+                  INTO WS-STR
+                  WITH POINTER WS-STR-POINTER
+           DISPLAY 'WS-STR.......... : ' WS-STR
+           DISPLAY 'WS-STR-POINTER...: ' WS-STR-POINTER
+      *-----------------------------------------------------------------
+           MOVE 1 TO WS-STR-POINTER
+           IF AREA-CODE NOT = 0 THEN
+               STRING '('       DELIMITED BY SIZE
+                      AREA-CODE DELIMITED BY SIZE
+                      ') '      DELIMITED BY SIZE
+                      INTO FORMATTED-NUMBER
+                      WITH POINTER WS-STR-POINTER
+           END-IF
+           STRING PREFIX-NUM DELIMITED BY SIZE
+                  '-'        DELIMITED BY SIZE
+                  LAST-FOUR  DELIMITED BY SIZE
+                  INTO FORMATTED-NUMBER
+                  WITH POINTER WS-STR-POINTER
+           DISPLAY 'FORMATTED-NUMBER...: ' FORMATTED-NUMBER
+           GOBACK
+           .

@@ -1,6 +1,6 @@
 000000*AA1ABBB+----2----+----3----+----4----+----5----+----6----+----7--SEQUENCE
        IDENTIFICATION DIVISION.
-       PROGRAM-ID. MANIP.
+       PROGRAM-ID. DATMAN.
        AUTHOR. Andras Pahi.
        DATE-WRITTEN. 11/23/2025.
        DATA DIVISION.
