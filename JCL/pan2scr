@@ -1,8 +1,29 @@
 #!/bin/bash
+if [ -z "$TYCOBOL" ];
+then
+  echo "TYCOBOL env not found"
+  exit 1
+fi
 if [ $# -ne 1 ];
 then
   echo "usage: pan2scr <panel>"
   exit 1
 fi
 
-exec awk -f JCL/panel.awk PANLIB/$1 > $1.cbl
+OUT="$1.cbl"
+DST="$TYCOBOL/CBL/$1"
+awk -f JCL/panel.awk PANLIB/$1 > $OUT
+if [ -s "$DST" ];
+then
+  echo "$DST exists, update contents..."
+  OLD="$DST.old"
+  REPL="$$.repl"
+  cp $DST $OLD
+  sed -n '/BEGIN-PAN2SCR/,/END-PAN2SCR/p' $OUT > $REPL
+  sed -e '/BEGIN-PAN2SCR/,/END-PAN2SCR/!b' -e "/END-PAN2SCR/!d;r $REPL" -e 'd' $OLD >$DST
+  rm -f $REPL $OUT
+else
+  mv $OUT $DST
+fi
+
+

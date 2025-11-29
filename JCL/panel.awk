@@ -1,3 +1,7 @@
+#
+# History:
+# 251129AP  remove ':' from field names, 'o' marks field read-only
+#
 BEGIN \
 {
   MAXSP = 1;
@@ -14,9 +18,11 @@ BEGIN \
   nscrlines = 0;
 
   # scropt[]
-  # r - required
-  # fN - fg color
-  # h - highlight
+  # r   required
+  # fN  fg color
+  # bN  bg color
+  # o   read-only field, FROM
+  # h   highlight
 }
 
 function trim(s ,n)
@@ -35,6 +41,8 @@ function mkfield(s)
 {
     # printf "mkfield(\"%s\")\n",s;
     gsub(" ","-",s);
+    # remove :
+    gsub(":","",s);
     gsub("\\.","",s);
     gsub("/","-",s);
     return "SC-" toupper(s);
@@ -95,6 +103,7 @@ function getscropt(s ,c)
   while ("a" <= c && c <= "z") {
     scropt["any"] = 1;
     s = substr(s,2);
+    if ("o" == c) scropt[c] = 1;
     if ("r" == c) scropt[c] = 1;
     if ("h" == c) scropt[c] = 1;
     if ("b" == c) { scropt[c] = substr(s,1,1); s = substr(s,2); }
@@ -122,7 +131,9 @@ function emit(trig, s ,fld,fmt)
         scrlines[nscrlines++] = sprintf("%31sREVERSE-VIDEO\n","");
         if ("r" in scropt)
             scrlines[nscrlines++] = sprintf("%31sREQUIRED\n","");
-        scrlines[nscrlines++] = sprintf("%31sUSING %s.\n","",fld);
+        using = "USING";
+        if ("o" in scropt) using ="FROM";
+        scrlines[nscrlines++] = sprintf("%31s%s %s.\n","",using,fld);
         fields[nfields++] = fld "^" fmt;
     } else {
         s = quote(getscropt(s));
@@ -192,6 +203,7 @@ END \
     printf "      *-----------------------------------------------------\n";
     printf "       DATA DIVISION.\n";
     printf "       WORKING-STORAGE SECTION.\n";
+    printf "      *---------------------BEGIN-PAN2SCR-------------------\n";
     printf "       COPY WSSCRN.\n";
     for (x = 0; x < nfields; x++) {
         n = split(fields[x],parts,"^");
@@ -202,15 +214,15 @@ END \
         printf "       01 %-20s PIC %s VALUE %s.\n", fld, fmt, blank;
     }
     printf "      *-----------------------------------------------------\n";
-    printf "       SCREEN SECTION.\n";
-    printf "       01 %s-SCREEN\n", PRG;
+    printf "       SCREEN SECTION.\n"; printf "       01 %s-SCREEN\n", PRG;
     printf "          BLANK SCREEN, AUTO,\n";
     printf "          FOREGROUND-COLOR IS %d,\n", fgcol;
     printf "          BACKGROUND-COLOR IS %d.\n", bgcol;
     for (x = 0; x < nscrlines; x++) {
         printf "%s", scrlines[x];
     }
-    printf "      *-----------------------------------------------------\n";
+
+    printf "      *----------------------END-PAN2SCR--------------------\n";
     printf "       PROCEDURE DIVISION.\n";
     printf "           DISPLAY %s-SCREEN\n", PRG;
     printf "           ACCEPT %s-SCREEN\n", PRG;
