@@ -66,7 +66,7 @@
            PERFORM SHOW-NAMES
       *-----------------------------------------------------------------
            MOVE 'Jones,Joe John' TO WS-STR
-           MOVE 'Kowalsky,Joe John' TO WS-STR
+           MOVE 'Kowalsky,Joe John   Jeremy' TO WS-STR
            DISPLAY 'NAME..........: ' WS-STR
            INITIALIZE NAME, LAST-DELIM
            INITIALIZE NUM-FIELDS, NUM-CHARS
@@ -89,9 +89,9 @@
                TALLYING IN NUM-FIELDS
                ON OVERFLOW
                    DISPLAY 'Split name overflow.'
-                           ' String:=''' WS-STR ''''
-                           ' Last delimiter:=''' LAST-DELIM ''''
-                           ' Position:=' WS-STR-POINTER
+                   DISPLAY 'String:=''' WS-STR ''''
+                   MOVE '^' TO LAST-DELIM(WS-STR-POINTER:1)
+                   DISPLAY '        ' LAST-DELIM(1:WS-STR-POINTER)
            END-UNSTRING
            PERFORM SHOW-NAMES
       *-----------------------------------------------------------------
