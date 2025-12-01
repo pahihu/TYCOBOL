@@ -1,15 +1,17 @@
 #
 # History:
+# 251201AP  MEMBER var
 # 251129AP  remove ':' from field names, 'o' marks field read-only
 #
 BEGIN \
 {
+  # MEMBER is the name
   MAXSP = 1;
   fgcol = ENVIRON["COB_FG_COLOR"];
   bgcol = ENVIRON["COB_BG_COLOR"];
   if (0 == +fgcol) fgcol = 7;
   if (0 == +bgcol) bgcol = 1;
-  PRG = toupper(ARGV[1]);
+  PRG = toupper(MEMBER);
   n = index(PRG, "/"); if (n) PRG = substr(PRG, n+1);
 
   # fields[x] = fld^fmt

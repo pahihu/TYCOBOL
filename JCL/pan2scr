@@ -11,12 +11,13 @@ then
 fi
 
 OUT="$1.cbl"
-DST="$TYCOBOL/CBL/$1"
-awk -f JCL/panel.awk PANLIB/$1 > $OUT
+CBL="$TYCOBOL/CBL"
+DST="$CBL/$OUT"
+awk -v MEMBER=$1 -f JCL/panel.awk PANLIB/$1 > $OUT
 if [ -s "$DST" ];
 then
   echo "$DST exists, update contents..."
-  OLD="$DST.old"
+  OLD="$CBL/$1.old"
   REPL="$$.repl"
   cp $DST $OLD
   sed -n '/BEGIN-PAN2SCR/,/END-PAN2SCR/p' $OUT > $REPL

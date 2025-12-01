@@ -55,17 +55,17 @@
 
        SHOW-ZU-5.
            DISPLAY 'WS-ZU-5    PIC 9(5)      (unsigned) = ' WS-ZU-5
-                   '   HEX: ' HX-ZU-5
+                   '    HEX: ' HX-ZU-5
            EXIT.
 
        SHOW-ZS-5P.
            DISPLAY 'WS-ZS-5P   PIC S9(5)     (positive) = ' WS-ZS-5P
-                   '  HEX: ' HX-ZS-5P
+                   '   HEX: ' HX-ZS-5P
            EXIT.
 
         SHOW-ZS-5N.
            DISPLAY 'WS-ZS-5N   PIC S9(5)     (negative) = ' WS-ZS-5N
-                   '  HEX: ' HX-ZS-5N
+                   '   HEX: ' HX-ZS-5N
            EXIT.
 
         SHOW-ZU-3V2.
