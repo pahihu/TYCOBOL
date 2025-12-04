@@ -18,7 +18,6 @@
                          PIC X VALUE SPACE.
              88 NEXT-ALIVE        VALUE '*'.
        01 POS            PIC 9(3) VALUE ZERO.
-       01 CENTER         PIC 9(3) VALUE ZERO.
        01 HP             PIC 9(2) VALUE ZERO.
           88 HEALTHY              VALUE 1 THRU 4.
        01 GENERATION     PIC 9(2) VALUE ZERO.
@@ -37,34 +36,22 @@
       *-----------------------------------------------------------------
        ALIVE-OR-DEAD.
            INITIALIZE NEXT-WORLD
-           PERFORM VARYING POS FROM 0 BY 1
+           PERFORM VARYING POS FROM 1 BY 1
                    UNTIL POS > LENGTH OF WORLD
                INITIALIZE HP
-               IF (0 < POS AND POS < LENGTH OF WORLD)
-                  AND ALIVE(POS)
+               IF 0 < POS - 1
+                  AND ALIVE(POS - 1)
                    ADD 4 TO HP
                END-IF
-               IF (POS + 1 < LENGTH OF WORLD)
-                  AND ALIVE(POS + 1)
+               IF ALIVE(POS)
                    ADD 2 TO HP
                END-IF
-               IF (POS + 2 < LENGTH OF WORLD)
-                  AND ALIVE(POS + 2)
+               IF POS + 1 < LENGTH OF WORLD
+                  AND ALIVE(POS + 1)
                    ADD 1 TO HP
                END-IF
-      D        IF HP > 0
-      D            DISPLAY 'POS=' POS ' HP=' HP ' HEALTHY='
-      D            WITH NO ADVANCING
-      D            IF HEALTHY
-      D               DISPLAY 'Y'
-      D            ELSE
-      D               DISPLAY 'N'
-      D            END-IF
-      D        END-IF
-               IF HEALTHY AND (POS + 1 < LENGTH OF WORLD)
-      D            DISPLAY 'HEALTHY HP=' HP
-                   COMPUTE CENTER = POS + 1
-                   SET NEXT-ALIVE(CENTER) TO TRUE
+               IF HEALTHY
+                   SET NEXT-ALIVE(POS) TO TRUE
                END-IF
            END-PERFORM
            MOVE NEXT-WORLD TO WORLD
