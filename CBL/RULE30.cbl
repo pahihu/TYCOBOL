@@ -9,12 +9,17 @@
        DATA DIVISION.
        FILE SECTION.
        WORKING-STORAGE SECTION.
+       77 WORLD-LENGTH   PIC 9(3) VALUE 120.
        01 WORLD.
-          03 CELL        OCCURS 120 TIMES
+          03 CELL        OCCURS 122 TIMES
                          PIC X VALUE SPACE.
              88 ALIVE             VALUE '*'.
+       01 FILLER REDEFINES WORLD.
+          03 FILLER        PIC X.
+          03 VISIBLE-WORLD PIC X(120).
+          03 FILLER        PIC X.
        01 NEXT-WORLD.
-          03 NEXT-CELL   OCCURS 120 TIMES
+          03 NEXT-CELL   OCCURS 122 TIMES
                          PIC X VALUE SPACE.
              88 NEXT-ALIVE        VALUE '*'.
        01 POS            PIC 9(3) VALUE ZERO.
@@ -24,30 +29,28 @@
        01 MAX-GENERATION PIC 9(3) VALUE 60.
       *-----------------------------------------------------------------
        PROCEDURE DIVISION.
-           SET ALIVE(60) TO TRUE
-           PERFORM SHOW-WORLD
+           SET ALIVE(61) TO TRUE
+           DISPLAY VISIBLE-WORLD
            PERFORM VARYING GENERATION FROM 1 BY 1
                    UNTIL GENERATION > MAX-GENERATION
                PERFORM ALIVE-OR-DEAD
-               PERFORM SHOW-WORLD
+               DISPLAY VISIBLE-WORLD
            END-PERFORM
            GOBACK
            .
       *-----------------------------------------------------------------
        ALIVE-OR-DEAD.
            INITIALIZE NEXT-WORLD
-           PERFORM VARYING POS FROM 1 BY 1
-                   UNTIL POS > LENGTH OF WORLD
+           PERFORM VARYING POS FROM 2 BY 1
+                   UNTIL POS > LENGTH OF VISIBLE-WORLD + 1
                INITIALIZE HP
-               IF 0 < POS - 1
-                  AND ALIVE(POS - 1)
+               IF ALIVE(POS - 1)
                    ADD 4 TO HP
                END-IF
                IF ALIVE(POS)
                    ADD 2 TO HP
                END-IF
-               IF POS + 1 < LENGTH OF WORLD
-                  AND ALIVE(POS + 1)
+               IF ALIVE(POS + 1)
                    ADD 1 TO HP
                END-IF
                IF HEALTHY
@@ -55,12 +58,4 @@
                END-IF
            END-PERFORM
            MOVE NEXT-WORLD TO WORLD
-           .
-      *-----------------------------------------------------------------
-       SHOW-WORLD.
-           DISPLAY ' '
-           PERFORM VARYING POS FROM 1 BY 1
-                   UNTIL POS > LENGTH OF WORLD
-               DISPLAY CELL(POS) WITH NO ADVANCING
-           END-PERFORM
            .
