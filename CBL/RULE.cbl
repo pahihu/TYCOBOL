@@ -11,92 +11,125 @@
        DATA DIVISION.
        WORKING-STORAGE SECTION.
        01 WORLD.
-          03 CELL        OCCURS 120 TIMES
-                         PIC X     VALUE SPACE.
-             88 ALIVE              VALUE '*'.
-       01 PAST-WORLD     OCCURS 999 TIMES.
-          03 PAST-STATE  OCCURS   4 TIMES
-                         PIC 9(9)   BINARY VALUE ZERO.
+          03 CELL               OCCURS 120 TIMES
+                                PIC X      VALUE SPACE.
+             88 ALIVE                      VALUE '*'.
+       01 PAST-WORLD            OCCURS 999 TIMES.
+          03 PAST-STATE         OCCURS   4 TIMES
+                                PIC 9(10)  BINARY VALUE ZERO.
        01 CURRENT-WORLD.
-          03 CURRENT-STATE    OCCURS   4 TIMES
-                              PIC 9(9)   BINARY VALUE ZERO.
+          03 CURRENT-STATE      OCCURS   4 TIMES
+                                PIC 9(10)  BINARY VALUE ZERO.
        01 NEXT-WORLD.
-          03 NEXT-CELL   OCCURS 120 TIMES
-                         PIC X     VALUE SPACE.
-             88 NEXT-ALIVE         VALUE '*'.
-       01 POS            PIC 9(3)  BINARY VALUE ZERO.
-       01 I              PIC 9(3)  BINARY VALUE ZERO.
-       01 J              PIC 9(3)  BINARY VALUE ZERO.
-       01 HP             PIC 9(1)  BINARY VALUE ZERO.
-       01 PAST-GENERATION   PIC 9(3)  BINARY VALUE ZERO.
-       01 GENERATION        PIC 9(3)  BINARY VALUE ZERO.
-       01 MAX-GENERATION    PIC 9(3)  BINARY VALUE 60.
-       01 RULE           PIC 9(3)  BINARY VALUE ZERO.
-       01 DISP-RULE      PIC 9(3)  VALUE ZERO.
-       01 DISP-MAX-GENERATION PIC 9(3)  VALUE ZERO.
-       01 ODD            PIC 9     BINARY VALUE ZERO.
+          03 NEXT-CELL          OCCURS 120 TIMES
+                                PIC X      VALUE SPACE.
+             88 NEXT-ALIVE                 VALUE '*'.
+       01 HP                    PIC 9(1)   BINARY VALUE ZERO.
+       01 GENERATION            PIC 9(3)   BINARY VALUE ZERO.
+       01 MAX-GENERATION        PIC 9(3)   BINARY VALUE 60.
+       01 POS                   PIC 9(3)   BINARY VALUE ZERO.
+       01 I                     PIC 9(3)   BINARY VALUE ZERO.
+       01 J                     PIC 9(3)   BINARY VALUE ZERO.
+       01 RULE                  PIC 9(3)   BINARY VALUE ZERO.
        01 RULE-PATTERNS.
-          03 PATTERN     OCCURS 8 TIMES
-                         PIC 9     VALUE ZERO.
-             88 BORN               VALUE 1.
-       01 ARGC           PIC 9(3)  VALUE 0.
-       01 ARG            PIC X(80) VALUE SPACES.
-       01 RULE-STATES.
-          03 RULE-HEADER1.
-             05 FILLER   OCCURS 8 TIMES.
-                07 FILLER      PIC X(06) VALUE ' +---+'.
-          03 RULE-HEADER2
-             PIC X(48)
-             VALUE ' |***| |** | |* *| |*  | | **| | * | |  *| |   |'.
-          03 RULE-HEADER3.
-             05 FILLER  OCCURS 8 TIMES.
-                07 FILLER   PIC XXX VALUE '  |'.
-                07 STATE    PIC X   VALUE SPACE.
-                07 FILLER   PIC XX  VALUE '| '.
-          03 RULE-HEADER4.
-             05 FILLER  OCCURS 8 TIMES.
-                07 FILLER      PIC X(06) VALUE '  +-+ '.
+          03 PATTERN            OCCURS   8 TIMES
+                                PIC 9      VALUE ZERO.
+             88 BORN                       VALUE 1.
+      *-----------------------------------------------------------------
+       01 ARGC                  PIC 9(3)   VALUE ZEROS.
+       01 ARG                   PIC X(80)  VALUE SPACES.
+      *-----------------------------------------------------------------
+       01 SWITCHES.
+          03 SW-SAME-STATE      PIC X      VALUE SPACE.
+             88 SAME-STATE                 VALUE 'Y'.
+          03 SW-DONE            PIC X      VALUE SPACE.
+             88 DONE                       VALUE 'Y'.
+      *-----------------------------------------------------------------
+       01 PRT-HEADER0.
+          03 FILLER             PIC X(13)  VALUE 'LAST SEEN AT '.
+          03 DISP-GENERATION    PIC 9(03)  VALUE ZEROS.
+       01 PRT-HEADER1.
+          03 FILLER             PIC X(05)  VALUE 'RULE '.
+          03 DISP-RULE          PIC 9(03)  VALUE ZEROS.
+          03 FILLER             PIC X(16)  VALUE ' MAX-GENERATION '.
+          03 DISP-MAX-GENERATION PIC 9(03) VALUE ZEROS.
+       01 PRT-HEADER2           PIC X(48)
+          VALUE ' +---+ +---+ +---+ +---+ +---+ +---+ +---+ +---+'.
+       01 PRT-HEADER3
+          PIC X(48)
+          VALUE ' |***| |** | |* *| |*  | | **| | * | |  *| |   |'.
+       01 PRT-HEADER4.
+          03 FILLER             OCCURS 8 TIMES.
+             05 FILLER          PIC XXX    VALUE '  |'.
+             05 STATE           PIC X      VALUE SPACE.
+             05 FILLER          PIC XX     VALUE '| '.
+       01 PRT-HEADER5
+          PIC X(48)
+          VALUE '  +-+   +-+   +-+   +-+   +-+   +-+   +-+   +-+ '.
+       01 WS-KEY                PIC X      VALUE SPACE.
       *-----------------------------------------------------------------
        PROCEDURE DIVISION.
-           PERFORM INIT-WORLD
-           DISPLAY WORLD
-           PERFORM VARYING GENERATION FROM 1 BY 1
-                   UNTIL GENERATION > MAX-GENERATION
-               PERFORM ALIVE-OR-DEAD
-               DISPLAY WORLD
-               PERFORM CALC-CURRENT-WORLD-STATE
-               PERFORM SEARCH-PAST-WORLDS
+           MOVE 0 TO RULE
+           PERFORM UNTIL EXIT
+               MOVE SPACE TO SW-DONE
+               PERFORM INIT-WORLD
+               PERFORM SHOW-WORLD
+               PERFORM VARYING GENERATION FROM 2 BY 1
+                       UNTIL (GENERATION > MAX-GENERATION) OR DONE
+                   PERFORM ALIVE-OR-DEAD
+                   PERFORM SHOW-WORLD
+                   IF SAME-STATE
+                       MOVE POS TO DISP-GENERATION
+                       DISPLAY PRT-HEADER0
+                       SET DONE TO TRUE
+                   END-IF
+               END-PERFORM
+               DISPLAY 'Press C to continue...'
+               ACCEPT WS-KEY
+               IF 'c' NOT = WS-KEY
+                   GOBACK
+               END-IF
+               COMPUTE RULE = RULE + 1
            END-PERFORM
-           GOBACK
+           .
+      *-----------------------------------------------------------------
+       SHOW-WORLD.
+           DISPLAY WORLD
+           PERFORM CALC-CURRENT-WORLD-STATE
+           PERFORM SEARCH-PAST-WORLDS
+           MOVE CURRENT-WORLD TO PAST-WORLD(GENERATION)
            .
       *-----------------------------------------------------------------
        INIT-WORLD.
+           INITIALIZE WORLD
            SET ALIVE(60) TO TRUE
+           MOVE 1 TO GENERATION
 
-           PERFORM GET-ARGS
+      *    PERFORM GET-ARGS
            PERFORM INIT-RULE
            .
       *-----------------------------------------------------------------
        INIT-RULE.
            MOVE RULE TO DISP-RULE
            MOVE MAX-GENERATION TO DISP-MAX-GENERATION
-           DISPLAY 'RULE ' DISP-RULE
-                   ' MAX-GENERATION ' DISP-MAX-GENERATION
-           PERFORM VARYING POS FROM 1 BY 1
-                   UNTIL POS > 8
-               COMPUTE ODD = FUNCTION REM(RULE, 2)
-               IF 1 = ODD
-                   SET BORN(POS) TO TRUE
-                   MOVE '*' TO STATE(9 - POS)
+           INITIALIZE RULE-PATTERNS
+           MOVE RULE TO POS
+           PERFORM VARYING I FROM 1 BY 1
+                   UNTIL I > 8
+               COMPUTE J = FUNCTION REM(POS, 2)
+               IF 1 = J
+                   SET BORN(I) TO TRUE
+                   MOVE '*' TO STATE(9 - I)
                END-IF
-               COMPUTE RULE = RULE / 2
+               COMPUTE POS = POS / 2
            END-PERFORM
+           DISPLAY PRT-HEADER1
            PERFORM CHECK-VIABLE
-           DISPLAY RULE-HEADER1
-           DISPLAY RULE-HEADER2
-           DISPLAY RULE-HEADER1
-           DISPLAY RULE-HEADER3
-           DISPLAY RULE-HEADER4
+           DISPLAY PRT-HEADER2
+           DISPLAY PRT-HEADER3
+           DISPLAY PRT-HEADER2
+           DISPLAY PRT-HEADER4
+           DISPLAY PRT-HEADER5
            .
       *-----------------------------------------------------------------
        ALIVE-OR-DEAD.
@@ -135,46 +168,38 @@
       *-----------------------------------------------------------------
        CALC-CURRENT-WORLD-STATE.
            MOVE 1 TO POS
-           PERFORM VARYING I FROM 1 BY 1
-                   UNTIL I > 4
+           PERFORM VARYING I FROM 1 BY 1 UNTIL I > 4
                INITIALIZE CURRENT-STATE(I)
-               PERFORM VARYING J FROM 1 BY 1
-                       UNTIL J > 30
-                   COMPUTE CURRENT-STATE(I) =
-                           2 * CURRENT-STATE(I)
-                   IF '*' = CELL(POS)
-                       COMPUTE CURRENT-STATE(I) =
-                           1 + CURRENT-STATE(I)
+               PERFORM VARYING J FROM 1 BY 1 UNTIL J > 30
+                   COMPUTE CURRENT-STATE(I) = 2 * CURRENT-STATE(I)
+                   IF CELL(POS) = '*'
+                       COMPUTE CURRENT-STATE(I) = 1 + CURRENT-STATE(I)
                    END-IF
+                   COMPUTE POS = POS + 1
                END-PERFORM
-               DISPLAY 'STATE(' I ')=' CURRENT-STATE(I)
            END-PERFORM
            .
       *-----------------------------------------------------------------
        SEARCH-PAST-WORLDS.
-           INITIALIZE PAST-GENERATION
+           MOVE SPACE TO SW-SAME-STATE
            PERFORM VARYING POS FROM 1 BY 1
-                   UNTIL (POS = GENERATION) OR (PAST-GENERATION > 0)
-               PERFORM COMPARE-WORLD-STATE
-               IF PAST-GENERATION > 0
-                   DISPLAY 'LAST SEEN AT ' PAST-GENERATION
-                   GOBACK
-               END-IF
+                   UNTIL (POS > GENERATION - 1) OR SAME-STATE
+               SET SAME-STATE TO TRUE
+               PERFORM VARYING I FROM 1 BY 1
+                       UNTIL (I > 4) OR (NOT SAME-STATE)
+                   IF CURRENT-STATE(I) NOT = PAST-STATE(POS, I)
+                      MOVE SPACE TO SW-SAME-STATE
+                   END-IF
+               END-PERFORM
            END-PERFORM
-           MOVE CURRENT-WORLD TO PAST-WORLD(GENERATION)
            .
       *-----------------------------------------------------------------
-       COMPARE-WORLD-STATE.
-           MOVE POS TO PAST-GENERATION
-           PERFORM VARYING I FROM 1 BY 1
-                   UNTIL (I > 4) OR (0 = PAST-GENERATION)
-               IF CURRENT-STATE(I) NOT = PAST-STATE(POS, I)
-                  INITIALIZE PAST-GENERATION
-               END-IF
-           END-PERFORM
-           .
+      *                      GnuCOBOL specific
       *-----------------------------------------------------------------
        GET-ARGS.
+           MOVE 110 TO RULE
+           .
+       GET-GNU-ARGS.
            ACCEPT ARGC FROM ARGUMENT-NUMBER
            EVALUATE ARGC
                WHEN 1
@@ -202,7 +227,7 @@
                CONTINUE
            ELSE
                DISPLAY 'THIS RULE IS NOT VIABLE'
-               GOBACK
+               SET DONE TO TRUE
            END-IF
            .
       *-----------------------------------------------------------------
