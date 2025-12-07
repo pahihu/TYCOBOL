@@ -47,10 +47,23 @@
           03 SW-DONE            PIC X      VALUE SPACE.
              88 DONE                       VALUE 'Y'
                                            WHEN SET TO FALSE ' '.
+          03 SW-VERBOSE         PIC X      VALUE SPACE.
+             88 VERBOSE                    VALUE 'Y'.
+             88 QUIET                      VALUE 'N'.
+          03 SW-CYCLIC-WORLD    PIC X      VALUE SPACE.
+             88 FLAT-WORLD                 VALUE 'N'.
+             88 CYCLIC-WORLD               VALUE 'Y'.
+          03 SW-VIABLE          PIC X      VALUE SPACE.
+             88 DODOID                     VALUE 'N'.
+             88 VIABLE                     VALUE 'Y'.
       *-----------------------------------------------------------------
        01 PRT-HEADER0.
-          03 FILLER             PIC X(13)  VALUE 'LAST SEEN AT '.
-          03 DISP-GENERATION    PIC 9(03)  VALUE ZEROS.
+          03 FILLER             PIC X(05)      VALUE 'RULE '.
+          03 DISP-RULE          PIC 9(03)      VALUE ZEROS.
+          03 FILLER             PIC X(12)      VALUE ' GENERATION '.
+          03 DISP-CURRENT-GENERATION PIC 9(03) VALUE ZEROS.
+          03 FILLER             PIC X(14)      VALUE ' LAST SEEN AT '.
+          03 DISP-PREV-GENERATION    PIC 9(03) VALUE ZEROS.
        01 PRT-HEADER1.
           03 FILLER             PIC X(05)  VALUE 'RULE '.
           03 DISP-RULE          PIC 9(03)  VALUE ZEROS.
@@ -76,39 +89,51 @@
       *-----------------------------------------------------------------
        PROCEDURE DIVISION USING ARGUMENTS.
            PERFORM GET-ARGS
-           PERFORM UNTIL EXIT
-               SET DONE TO FALSE
+           PERFORM VARYING RULE FROM RULE BY 1 UNTIL RULE > 255
                PERFORM INIT-WORLD
+               IF NOT VIABLE
+                   DISPLAY 'THIS RULE IS NOT VIABLE'
+                   EXIT PERFORM CYCLE
+               END-IF
                PERFORM SHOW-WORLD
                MOVE CURRENT-WORLD TO PAST-WORLD(GENERATION)
                PERFORM VARYING GENERATION FROM 2 BY 1
-                       UNTIL (GENERATION > MAX-GENERATION) OR DONE
+                       UNTIL (GENERATION > MAX-GENERATION)
                    PERFORM ALIVE-OR-DEAD
                    PERFORM SHOW-WORLD
                    IF SAME-STATE
-                       MOVE PREV-GENERATION TO
-                            DISP-GENERATION OF PRT-HEADER0
-                       DISPLAY PRT-HEADER0
-                       SET DONE TO TRUE
+                       PERFORM SHOW-CYCLE
+                       EXIT PERFORM
                    ELSE
                        MOVE CURRENT-WORLD TO PAST-WORLD(GENERATION)
                    END-IF
                END-PERFORM
-      *.................................................................
+               PERFORM ASK-CONTINUE
+           END-PERFORM
+           GOBACK
+           .
+      *-----------------------------------------------------------------
+       ASK-CONTINUE.
                MOVE 'Press Enter to continue...*' TO IO-P-STRING
                SET IOP-ACCEPT TO TRUE
                CALL 'GNUIO' USING IO-PARAMS
-      *.................................................................
                IF IO-P-CHAR NOT = ' '
                    GOBACK
                END-IF
-               COMPUTE RULE = RULE + 1
-           END-PERFORM
-           .
+               .
+       SHOW-CYCLE.
+               MOVE RULE TO DISP-RULE OF PRT-HEADER0
+               MOVE GENERATION TO
+                    DISP-CURRENT-GENERATION
+               MOVE PREV-GENERATION TO
+                    DISP-PREV-GENERATION
+               DISPLAY PRT-HEADER0
       *-----------------------------------------------------------------
        SHOW-WORLD.
            MOVE GENERATION TO DISP-GENERATION OF WORLD-VIEW
-           DISPLAY WORLD-VIEW
+           IF VERBOSE
+               DISPLAY WORLD-VIEW
+           END-IF
            PERFORM CALC-CURRENT-WORLD-STATE
            PERFORM SEARCH-PAST-WORLDS
            .
@@ -122,7 +147,7 @@
            .
       *-----------------------------------------------------------------
        INIT-RULE.
-           MOVE RULE TO DISP-RULE
+           MOVE RULE TO DISP-RULE OF PRT-HEADER1
            MOVE MAX-GENERATION TO DISP-MAX-GENERATION
            PERFORM VARYING I FROM 1 BY 1 UNTIL I > 8
                MOVE ' ' TO STATE(I)
@@ -139,11 +164,13 @@
            END-PERFORM
            DISPLAY PRT-HEADER1
            PERFORM CHECK-VIABLE
-           DISPLAY PRT-HEADER2
-           DISPLAY PRT-HEADER3
-           DISPLAY PRT-HEADER2
-           DISPLAY PRT-HEADER4
-           DISPLAY PRT-HEADER5
+           IF VERBOSE
+               DISPLAY PRT-HEADER2
+               DISPLAY PRT-HEADER3
+               DISPLAY PRT-HEADER2
+               DISPLAY PRT-HEADER4
+               DISPLAY PRT-HEADER5
+           END-IF
            .
       *-----------------------------------------------------------------
        ALIVE-OR-DEAD.
@@ -152,6 +179,9 @@
       * Precompute cell(1) liveness, then computing the next requires
       * only keeping the low 2 bits of HP and a shift left.
       *-----------------------------------------------------------------
+           IF CYCLIC-WORLD AND ALIVE(LENGTH OF WORLD)
+               ADD 4 TO HP
+           END-IF
            IF ALIVE(1)
                ADD 2 TO HP
            END-IF
@@ -174,6 +204,9 @@
                COMPUTE HP = 2 * FUNCTION REM(HP, 4)
            END-PERFORM
       *-----------------------------------------------------------------
+           IF CYCLIC-WORLD AND ALIVE(1)
+               ADD 1 TO HP
+           END-IF
            IF BORN(HP + 1)
                SET NEXT-ALIVE(LENGTH OF WORLD) TO TRUE
            END-IF
@@ -212,34 +245,53 @@
            .
       *-----------------------------------------------------------------
        GET-ARGS.
-           EVALUATE ARGC
-               WHEN 1
-                   PERFORM GET-RULE
-               WHEN 2
-                   PERFORM GET-RULE
-                   PERFORM GET-MAX-GENERATION
-               WHEN OTHER
-                   PERFORM SHOW-USAGE
-           END-EVALUATE
+           SET VERBOSE TO TRUE
+           SET FLAT-WORLD TO TRUE
+           MOVE 1 TO I
+           PERFORM VARYING POS FROM 1 BY 1 UNTIL POS > ARGC
+               EVALUATE ARGV(POS)
+                   WHEN 'Q'
+                       SET QUIET TO TRUE
+                   WHEN 'V'
+                       SET VERBOSE TO TRUE
+                   WHEN 'F'
+                       SET FLAT-WORLD TO TRUE
+                   WHEN 'C'
+                       SET CYCLIC-WORLD TO TRUE
+                   WHEN OTHER
+                       EVALUATE I
+                           WHEN 1
+                               PERFORM GET-RULE
+                               MOVE 2 TO I
+                           WHEN 2
+                               PERFORM GET-MAX-GENERATION
+                               MOVE 3 TO I
+                           WHEN OTHER
+                               PERFORM SHOW-USAGE
+                       END-EVALUATE
+               END-EVALUATE
+           END-PERFORM
+           IF I = 1
+               PERFORM SHOW-USAGE
+           END-IF
            .
        GET-RULE.
-           MOVE FUNCTION NUMVAL(ARGV(1)) TO RULE
+           MOVE FUNCTION NUMVAL(ARGV(POS)) TO RULE
            .
        GET-MAX-GENERATION.
-           MOVE FUNCTION NUMVAL(ARGV(2)) TO MAX-GENERATION
+           MOVE FUNCTION NUMVAL(ARGV(POS)) TO MAX-GENERATION
            .
       *-----------------------------------------------------------------
        CHECK-VIABLE.
            IF BORN(1) OR BORN(2) OR BORN(3) OR BORN(5)
-               CONTINUE
+               SET VIABLE TO TRUE
            ELSE
-               DISPLAY 'THIS RULE IS NOT VIABLE'
-               SET DONE TO TRUE
+               SET DODOID TO TRUE
            END-IF
            .
       *-----------------------------------------------------------------
        SHOW-USAGE.
-           DISPLAY 'USAGE: RULE <RULE-NUMBER>'
+           DISPLAY 'USAGE: RULE [VQFC] <RULE-NUMBER> [MAX-GENERATION]'
            MOVE 1000 TO RETURN-CODE
            GOBACK
            .
