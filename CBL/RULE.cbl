@@ -10,17 +10,18 @@
        DATE-WRITTEN. 2025-12-04.
        DATA DIVISION.
        WORKING-STORAGE SECTION.
+       01 WORLD-WIDTH           PIC 9(3)   BINARY VALUE 120.
        01 WORLD-VIEW.
-          03 DISP-GENERATION    PIC 9(3)   VALUE ZEROS.
+          03 DISP-GENERATION    PIC Z(4)9  VALUE ZEROS.
           03 WORLD.
              05 CELL            OCCURS 120 TIMES
                                 PIC X      VALUE SPACE.
                 88 ALIVE                   VALUE '*'.
        01 FILLER.
-          03 PAST-WORLD         OCCURS 999 TIMES.
-             05 PAST-STATE      OCCURS   4 TIMES
+          03 PAST-WORLD-STATE   OCCURS 16384 TIMES.
+             05 PAST-STATE      OCCURS    4 TIMES
                                 PIC 9(10)  BINARY VALUE ZERO.
-       01 CURRENT-WORLD.
+       01 CURRENT-WORLD-STATE.
           03 CURRENT-STATE      OCCURS   4 TIMES
                                 PIC 9(10)  BINARY VALUE ZERO.
        01 NEXT-WORLD.
@@ -28,9 +29,10 @@
                                 PIC X      VALUE SPACE.
              88 NEXT-ALIVE                 VALUE '*'.
        01 HP                    PIC 9(1)   BINARY VALUE ZERO.
-       01 GENERATION            PIC 9(3)   BINARY VALUE ZERO.
-       01 PREV-GENERATION       PIC 9(3)   BINARY VALUE ZERO.
-       01 MAX-GENERATION        PIC 9(3)   BINARY VALUE 60.
+       01 GENERATION-IDX        PIC 9(5)   BINARY VALUE ZERO.
+       01 GENERATION            PIC 9(5)   BINARY VALUE ZERO.
+       01 PREV-GENERATION       PIC 9(5)   BINARY VALUE ZERO.
+       01 MAX-GENERATION        PIC 9(5)   BINARY VALUE 60.
        01 POS                   PIC 9(3)   BINARY VALUE ZERO.
        01 I                     PIC 9(3)   BINARY VALUE ZERO.
        01 J                     PIC 9(3)   BINARY VALUE ZERO.
@@ -58,17 +60,19 @@
              88 VIABLE                     VALUE 'Y'.
       *-----------------------------------------------------------------
        01 PRT-HEADER0.
-          03 FILLER             PIC X(05)      VALUE 'RULE '.
-          03 DISP-RULE          PIC 9(03)      VALUE ZEROS.
-          03 FILLER             PIC X(12)      VALUE ' GENERATION '.
-          03 DISP-CURRENT-GENERATION PIC 9(03) VALUE ZEROS.
-          03 FILLER             PIC X(14)      VALUE ' LAST SEEN AT '.
-          03 DISP-PREV-GENERATION    PIC 9(03) VALUE ZEROS.
+          03 FILLER             PIC X(05)    VALUE 'RULE '.
+          03 DISP-RULE          PIC ZZ9      VALUE ZEROS.
+          03 FILLER             PIC X(12)    VALUE ' GENERATION '.
+          03 DISP-CURRENT-GENERATION PIC Z(4)9 VALUE ZEROS.
+          03 FILLER             PIC X(14)    VALUE ' LAST SEEN AT '.
+          03 DISP-PREV-GENERATION  PIC Z(4)9 VALUE ZEROS.
+          03 FILLER             PIC X(08)    VALUE ' PERIOD '.
+          03 DISP-PERIOD        PIC Z(4)9    VALUE ZEROS.
        01 PRT-HEADER1.
-          03 FILLER             PIC X(05)  VALUE 'RULE '.
-          03 DISP-RULE          PIC 9(03)  VALUE ZEROS.
-          03 FILLER             PIC X(16)  VALUE ' MAX-GENERATION '.
-          03 DISP-MAX-GENERATION PIC 9(03) VALUE ZEROS.
+          03 FILLER             PIC X(05)    VALUE 'RULE '.
+          03 DISP-RULE          PIC ZZ9      VALUE ZEROS.
+          03 FILLER             PIC X(16)    VALUE ' MAX-GENERATION '.
+          03 DISP-MAX-GENERATION PIC Z(4)9   VALUE ZEROS.
        01 PRT-HEADER2           PIC X(48)
           VALUE ' +---+ +---+ +---+ +---+ +---+ +---+ +---+ +---+'.
        01 PRT-HEADER3
@@ -82,6 +86,14 @@
        01 PRT-HEADER5
           PIC X(48)
           VALUE '  +-+   +-+   +-+   +-+   +-+   +-+   +-+   +-+ '.
+       01 PRT-HEADER6.
+          03 FILLER             PIC X(05)      VALUE 'RULE '.
+          03 DISP-RULE          PIC ZZ9        VALUE ZEROS.
+          03 FILLER             PIC X(12)      VALUE ' ETERNAL'.
+       01 PRT-HEADER7.
+          03 FILLER             PIC X(05)      VALUE 'RULE '.
+          03 DISP-RULE          PIC ZZ9        VALUE ZEROS.
+          03 FILLER             PIC X(12)      VALUE ' DEAD END'.
       *-----------------------------------------------------------------
        COPY CALLIO.
        LINKAGE SECTION.
@@ -92,11 +104,12 @@
            PERFORM VARYING RULE FROM RULE BY 1 UNTIL RULE > 255
                PERFORM INIT-WORLD
                IF NOT VIABLE
-                   DISPLAY 'THIS RULE IS NOT VIABLE'
+                   MOVE RULE TO DISP-RULE OF PRT-HEADER7
+                   DISPLAY PRT-HEADER7
                    EXIT PERFORM CYCLE
                END-IF
                PERFORM SHOW-WORLD
-               MOVE CURRENT-WORLD TO PAST-WORLD(GENERATION)
+               MOVE CURRENT-WORLD-STATE TO PAST-WORLD-STATE(GENERATION)
                PERFORM VARYING GENERATION FROM 2 BY 1
                        UNTIL (GENERATION > MAX-GENERATION)
                    PERFORM ALIVE-OR-DEAD
@@ -105,10 +118,17 @@
                        PERFORM SHOW-CYCLE
                        EXIT PERFORM
                    ELSE
-                       MOVE CURRENT-WORLD TO PAST-WORLD(GENERATION)
+                       MOVE CURRENT-WORLD-STATE TO
+                            PAST-WORLD-STATE(GENERATION)
                    END-IF
                END-PERFORM
-               PERFORM ASK-CONTINUE
+               IF GENERATION > MAX-GENERATION
+                   MOVE RULE TO DISP-RULE OF PRT-HEADER6
+                   DISPLAY PRT-HEADER6
+               END-IF
+               IF VERBOSE
+                   PERFORM ASK-CONTINUE
+               END-IF
            END-PERFORM
            GOBACK
            .
@@ -127,7 +147,10 @@
                     DISP-CURRENT-GENERATION
                MOVE PREV-GENERATION TO
                     DISP-PREV-GENERATION
+               SUBTRACT PREV-GENERATION FROM GENERATION
+                        GIVING DISP-PERIOD
                DISPLAY PRT-HEADER0
+               .
       *-----------------------------------------------------------------
        SHOW-WORLD.
            MOVE GENERATION TO DISP-GENERATION OF WORLD-VIEW
@@ -140,7 +163,7 @@
       *-----------------------------------------------------------------
        INIT-WORLD.
            INITIALIZE WORLD
-           SET ALIVE(60) TO TRUE
+           SET ALIVE(WORLD-WIDTH / 2) TO TRUE
            MOVE 1 TO GENERATION
 
            PERFORM INIT-RULE
@@ -162,9 +185,9 @@
                END-IF
                COMPUTE POS = POS / 2
            END-PERFORM
-           DISPLAY PRT-HEADER1
            PERFORM CHECK-VIABLE
            IF VERBOSE
+               DISPLAY PRT-HEADER1
                DISPLAY PRT-HEADER2
                DISPLAY PRT-HEADER3
                DISPLAY PRT-HEADER2
@@ -179,7 +202,7 @@
       * Precompute cell(1) liveness, then computing the next requires
       * only keeping the low 2 bits of HP and a shift left.
       *-----------------------------------------------------------------
-           IF CYCLIC-WORLD AND ALIVE(LENGTH OF WORLD)
+           IF CYCLIC-WORLD AND ALIVE(WORLD-WIDTH)
                ADD 4 TO HP
            END-IF
            IF ALIVE(1)
@@ -194,7 +217,7 @@
            COMPUTE HP = 2 * HP
       *-----------------------------------------------------------------
            PERFORM VARYING POS FROM 2 BY 1
-                   UNTIL POS > LENGTH OF WORLD - 1
+                   UNTIL POS > WORLD-WIDTH - 1
                IF ALIVE(POS + 1)
                    ADD 1 TO HP
                END-IF
@@ -208,38 +231,47 @@
                ADD 1 TO HP
            END-IF
            IF BORN(HP + 1)
-               SET NEXT-ALIVE(LENGTH OF WORLD) TO TRUE
+               SET NEXT-ALIVE(WORLD-WIDTH) TO TRUE
            END-IF
            MOVE NEXT-WORLD TO WORLD
            .
       *-----------------------------------------------------------------
        CALC-CURRENT-WORLD-STATE.
            MOVE 1 TO POS
-           PERFORM VARYING I FROM 1 BY 1 UNTIL I > 4
-               INITIALIZE CURRENT-STATE(I)
-               PERFORM VARYING J FROM 1 BY 1 UNTIL J > 30
-                   COMPUTE CURRENT-STATE(I) = 2 * CURRENT-STATE(I)
-                   IF CELL(POS) = '*'
-                       COMPUTE CURRENT-STATE(I) = 1 + CURRENT-STATE(I)
-                   END-IF
-                   COMPUTE POS = POS + 1
-               END-PERFORM
+           MOVE 1 TO I
+           MOVE 1 TO J
+           INITIALIZE CURRENT-WORLD-STATE
+           PERFORM VARYING POS FROM 1 BY 1 UNTIL POS > WORLD-WIDTH
+               COMPUTE CURRENT-STATE(I) = 2 * CURRENT-STATE(I)
+               IF CELL(POS) = '*'
+                   COMPUTE CURRENT-STATE(I) = 1 + CURRENT-STATE(I)
+               END-IF
+               ADD 1 TO J
+      * J #bits, if collected more than 30, reset J
+      * and go to next state
+               IF J > 30
+                   ADD 1 TO I
+                   INITIALIZE CURRENT-STATE(I)
+                   MOVE 1 TO J
+               END-IF
            END-PERFORM
            .
       *-----------------------------------------------------------------
        SEARCH-PAST-WORLDS.
            SET SAME-STATE TO FALSE
-           PERFORM VARYING POS FROM 1 BY 1
-                   UNTIL (POS > (GENERATION - 1)) OR SAME-STATE
+           PERFORM VARYING GENERATION-IDX FROM 1 BY 1
+                   UNTIL (GENERATION-IDX > (GENERATION - 1))
+                         OR SAME-STATE
                SET SAME-STATE TO TRUE
                PERFORM VARYING I FROM 1 BY 1
                        UNTIL (I > 4) OR (NOT SAME-STATE)
-                   IF CURRENT-STATE(I) NOT = PAST-STATE(POS, I)
+                   IF CURRENT-STATE(I) NOT = 
+                           PAST-STATE(GENERATION-IDX, I)
                       SET SAME-STATE TO FALSE
                    END-IF
                END-PERFORM
                IF SAME-STATE
-                   MOVE POS TO PREV-GENERATION
+                   MOVE GENERATION-IDX TO PREV-GENERATION
                END-IF
            END-PERFORM
            .
@@ -258,6 +290,9 @@
                        SET FLAT-WORLD TO TRUE
                    WHEN 'C'
                        SET CYCLIC-WORLD TO TRUE
+                   WHEN 'W'
+                       ADD 1 TO POS
+                       PERFORM GET-WIDTH
                    WHEN OTHER
                        EVALUATE I
                            WHEN 1
@@ -275,23 +310,32 @@
                PERFORM SHOW-USAGE
            END-IF
            .
+       GET-WIDTH.
+           MOVE FUNCTION NUMVAL(ARGV(POS)) TO WORLD-WIDTH
+           IF WORLD-WIDTH < 1 OR WORLD-WIDTH > 120
+               MOVE 120 TO WORLD-WIDTH
+           END-IF
+           .
        GET-RULE.
            MOVE FUNCTION NUMVAL(ARGV(POS)) TO RULE
            .
        GET-MAX-GENERATION.
            MOVE FUNCTION NUMVAL(ARGV(POS)) TO MAX-GENERATION
+           IF MAX-GENERATION > 16384
+               MOVE 16384 TO MAX-GENERATION
+           END-IF
            .
       *-----------------------------------------------------------------
        CHECK-VIABLE.
+           SET DODOID TO TRUE
            IF BORN(1) OR BORN(2) OR BORN(3) OR BORN(5)
                SET VIABLE TO TRUE
-           ELSE
-               SET DODOID TO TRUE
            END-IF
            .
       *-----------------------------------------------------------------
        SHOW-USAGE.
-           DISPLAY 'USAGE: RULE [VQFC] <RULE-NUMBER> [MAX-GENERATION]'
+           DISPLAY 'USAGE: RULE [VQFC] [W <WIDTH>]'
+                   ' <RULE-NUMBER> [MAX-GENERATION]'
            MOVE 1000 TO RETURN-CODE
            GOBACK
            .
