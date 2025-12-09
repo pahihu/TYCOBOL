@@ -2,11 +2,17 @@
                                       hCommission Plan Entry
 
 
-            Name: [rXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX]
-       Last Name: [oXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX]
-      First Name: [oXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX]
-      Sale Price: [rZ,ZZZ.99]
-        Group ID: [oX]
- Commission Plan: [oX]
-         Percent: [o99] %
-      Commission: [oZ,ZZZ.99]
+             Name: [rXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX]
+        Last Name: [oXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX]
+       First Name: [oXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX]
+
+     Date of Sale: [o99/99/99]
+       Full Price: [rZ,ZZZ.99]
+
+ Discount Percent: [o99] %
+       Sale Price: [oZ,ZZZ.99]
+
+         Group ID: [oX]
+  Commission Plan: [oX]
+          Percent: [o99] %
+       Commission: [oZ,ZZZ.99]
