@@ -1,5 +1,6 @@
 #
 # History:
+# 251211AP  screen options for fields also
 # 251201AP  MEMBER var
 # 251129AP  remove ':' from field names, 'o' marks field read-only
 #
@@ -25,6 +26,7 @@ BEGIN \
   # bN  bg color
   # o   read-only field, FROM
   # h   highlight
+  # n   normal video
 }
 
 function trim(s ,n)
@@ -105,6 +107,7 @@ function getscropt(s ,c)
   while ("a" <= c && c <= "z") {
     scropt["any"] = 1;
     s = substr(s,2);
+    if ("n" == c) scropt[c] = 1;
     if ("o" == c) scropt[c] = 1;
     if ("r" == c) scropt[c] = 1;
     if ("h" == c) scropt[c] = 1;
@@ -115,6 +118,15 @@ function getscropt(s ,c)
   return s;
 }
 
+function addopts()
+{
+    if ("h" in scropt)
+        scrlines[nscrlines++] = sprintf("%31sHIGHLIGHT\n","");
+    if ("f" in scropt)
+        scrlines[nscrlines++] = sprintf("%31sFOREGROUND-COLOR %d\n","",scropt["f"]);
+    if ("b" in scropt)
+        scrlines[nscrlines++] = sprintf("%31sBACKGROUND-COLOR %d\n","",scropt["b"]);
+}
 
 function emit(trig, s ,fld,fmt)
 {
@@ -130,7 +142,9 @@ function emit(trig, s ,fld,fmt)
             fld = sprintf("WS-%d", NR);
         fmt = getscropt(substr(s,2,length(s)-2));
         scrlines[nscrlines++] = sprintf("%10s03 LINE %02d COLUMN %02d PIC %s\n", "", NR, col, zipfmt(fmt), fld);
-        scrlines[nscrlines++] = sprintf("%31sREVERSE-VIDEO\n","");
+        if (0 == ("n" in scropt))
+            scrlines[nscrlines++] = sprintf("%31sREVERSE-VIDEO\n","");
+        addopts();
         if ("r" in scropt)
             scrlines[nscrlines++] = sprintf("%31sREQUIRED\n","");
         using = "USING";
@@ -142,12 +156,7 @@ function emit(trig, s ,fld,fmt)
         if (scropt["any"]) dot = "";
         else dot = ".";
         scrlines[nscrlines++] = sprintf("%10s03 LINE %02d COLUMN %02d VALUE '%s'%s\n", "", NR, col, s, dot);
-        if ("h" in scropt)
-            scrlines[nscrlines++] = sprintf("%31sHIGHLIGHT\n","");
-        if ("f" in scropt)
-            scrlines[nscrlines++] = sprintf("%31sFOREGROUND-COLOR %d\n","",scropt["f"]);
-        if ("b" in scropt)
-            scrlines[nscrlines++] = sprintf("%31sBACKGROUND-COLOR %d\n","",scropt["b"]);
+        addopts();
         if (dot == "") {
             tmp = scrlines[nscrlines-1];
             scrlines[nscrlines-1] = substr(tmp,1,length(tmp)-1) ".\n";
