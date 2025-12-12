@@ -11,12 +11,20 @@
        DATA DIVISION.
        WORKING-STORAGE SECTION.
        01 WORLD-WIDTH           PIC 9(3)   BINARY VALUE 120.
+       01 CENTER-POS            PIC 9(3)   BINARY VALUE 60.
        01 WORLD-VIEW.
           03 DISP-GENERATION    PIC Z(4)9  VALUE ZEROS.
+          03 FILLER             PIC X      VALUE '.'.
           03 WORLD.
              05 CELL            OCCURS 120 TIMES
                                 PIC X      VALUE SPACE.
-                88 ALIVE                   VALUE '*'.
+                88 DEAD                    VALUE ' '.
+       01 TRANS-VIEW.
+          03 DISP-GENERATION    PIC Z(4)9  VALUE ZEROS.
+          03 FILLER             PIC X      VALUE '.'.
+          03 TRANS-WORLD.
+             05 TRANS-CELL      OCCURS 120 TIMES
+                                PIC X      VALUE SPACE.
        01 FILLER.
           03 PAST-WORLD-STATE   OCCURS 16384 TIMES.
              05 PAST-STATE      OCCURS    4 TIMES
@@ -27,7 +35,7 @@
        01 NEXT-WORLD.
           03 NEXT-CELL          OCCURS 120 TIMES
                                 PIC X      VALUE SPACE.
-             88 NEXT-ALIVE                 VALUE '*'.
+             88 NEXT-DEAD                  VALUE ' '.
        01 HP                    PIC 9(1)   BINARY VALUE ZERO.
        01 GENERATION-IDX        PIC 9(5)   BINARY VALUE ZERO.
        01 GENERATION            PIC 9(5)   BINARY VALUE ZERO.
@@ -58,6 +66,8 @@
           03 SW-VIABLE          PIC X      VALUE SPACE.
              88 DODOID                     VALUE 'N'.
              88 VIABLE                     VALUE 'Y'.
+          03 SW-TRANSITION      PIC X      VALUE SPACE.
+             88 TRANSITION                 VALUE 'Y'.
       *-----------------------------------------------------------------
        01 PRT-HEADER0.
           03 FILLER             PIC X(05)    VALUE 'RULE '.
@@ -153,17 +163,26 @@
                .
       *-----------------------------------------------------------------
        SHOW-WORLD.
-           MOVE GENERATION TO DISP-GENERATION OF WORLD-VIEW
            IF VERBOSE
-               DISPLAY WORLD-VIEW
+               IF TRANSITION
+                   COMPUTE POS =
+                       FUNCTION NUMVAL-C(TRANS-CELL(CENTER-POS))
+                       + FUNCTION ORD('A')
+                   MOVE FUNCTION CHAR(POS) TO TRANS-CELL(CENTER-POS)
+                   MOVE GENERATION TO DISP-GENERATION OF TRANS-VIEW
+                   DISPLAY TRANS-VIEW
+               ELSE
+                   MOVE GENERATION TO DISP-GENERATION OF WORLD-VIEW
+                   DISPLAY WORLD-VIEW
+               END-IF
            END-IF
            PERFORM CALC-CURRENT-WORLD-STATE
            PERFORM SEARCH-PAST-WORLDS
            .
       *-----------------------------------------------------------------
        INIT-WORLD.
-           INITIALIZE WORLD
-           SET ALIVE(WORLD-WIDTH / 2) TO TRUE
+           INITIALIZE WORLD, TRANS-WORLD
+           MOVE '*' TO CELL(CENTER-POS)
            MOVE 1 TO GENERATION
 
            PERFORM INIT-RULE
@@ -202,38 +221,42 @@
       * Precompute cell(1) liveness, then computing the next requires
       * only keeping the low 2 bits of HP and a shift left.
       *-----------------------------------------------------------------
-           IF CYCLIC-WORLD AND ALIVE(WORLD-WIDTH)
+           IF CYCLIC-WORLD AND NOT DEAD(WORLD-WIDTH)
                ADD 4 TO HP
            END-IF
-           IF ALIVE(1)
+           IF NOT DEAD(1)
                ADD 2 TO HP
            END-IF
-           IF ALIVE(2)
+           IF NOT DEAD(2)
                ADD 1 TO HP
            END-IF
-           IF BORN(HP + 1)
-               SET NEXT-ALIVE(1) TO TRUE
-           END-IF
+           MOVE 1 TO POS
+           PERFORM MARK-CELL
            COMPUTE HP = 2 * HP
       *-----------------------------------------------------------------
            PERFORM VARYING POS FROM 2 BY 1
                    UNTIL POS > WORLD-WIDTH - 1
-               IF ALIVE(POS + 1)
+               IF NOT DEAD(POS + 1)
                    ADD 1 TO HP
                END-IF
-               IF BORN(HP + 1)
-                   SET NEXT-ALIVE(POS) TO TRUE
-               END-IF
+               PERFORM MARK-CELL
                COMPUTE HP = 2 * FUNCTION REM(HP, 4)
            END-PERFORM
       *-----------------------------------------------------------------
-           IF CYCLIC-WORLD AND ALIVE(1)
+           IF CYCLIC-WORLD AND NOT DEAD(1)
                ADD 1 TO HP
            END-IF
-           IF BORN(HP + 1)
-               SET NEXT-ALIVE(WORLD-WIDTH) TO TRUE
-           END-IF
+           PERFORM MARK-CELL
            MOVE NEXT-WORLD TO WORLD
+           .
+      *-----------------------------------------------------------------
+       MARK-CELL.
+           IF TRANSITION AND HP NOT = 0
+               MOVE HP TO TRANS-CELL(POS)
+           END-IF
+           IF BORN(HP + 1)
+               MOVE '*' TO NEXT-CELL(POS)
+           END-IF
            .
       *-----------------------------------------------------------------
        CALC-CURRENT-WORLD-STATE.
@@ -243,7 +266,7 @@
            INITIALIZE CURRENT-WORLD-STATE
            PERFORM VARYING POS FROM 1 BY 1 UNTIL POS > WORLD-WIDTH
                COMPUTE CURRENT-STATE(I) = 2 * CURRENT-STATE(I)
-               IF CELL(POS) = '*'
+               IF CELL(POS) NOT = SPACE
                    COMPUTE CURRENT-STATE(I) = 1 + CURRENT-STATE(I)
                END-IF
                ADD 1 TO J
@@ -251,7 +274,6 @@
       * and go to next state
                IF J > 30
                    ADD 1 TO I
-                   INITIALIZE CURRENT-STATE(I)
                    MOVE 1 TO J
                END-IF
            END-PERFORM
@@ -290,6 +312,8 @@
                        SET FLAT-WORLD TO TRUE
                    WHEN 'C'
                        SET CYCLIC-WORLD TO TRUE
+                   WHEN 'T'
+                        SET TRANSITION TO TRUE
                    WHEN 'W'
                        ADD 1 TO POS
                        PERFORM GET-WIDTH
@@ -309,12 +333,18 @@
            IF I = 1
                PERFORM SHOW-USAGE
            END-IF
+           DISPLAY 'RULE......: ' RULE
+           DISPLAY 'WIDTH.....: ' WORLD-WIDTH
+           DISPLAY 'VERBOSE...: ' SW-VERBOSE
+           DISPLAY 'CYCLIC....: ' SW-CYCLIC-WORLD
+           DISPLAY 'TRANSITION: ' SW-TRANSITION
            .
        GET-WIDTH.
            MOVE FUNCTION NUMVAL(ARGV(POS)) TO WORLD-WIDTH
            IF WORLD-WIDTH < 1 OR WORLD-WIDTH > 120
                MOVE 120 TO WORLD-WIDTH
            END-IF
+           COMPUTE CENTER-POS = WORLD-WIDTH / 2
            .
        GET-RULE.
            MOVE FUNCTION NUMVAL(ARGV(POS)) TO RULE
@@ -334,7 +364,7 @@
            .
       *-----------------------------------------------------------------
        SHOW-USAGE.
-           DISPLAY 'USAGE: RULE [VQFC] [W <WIDTH>]'
+           DISPLAY 'USAGE: RULE [VQFCT] [W <WIDTH>]'
                    ' <RULE-NUMBER> [MAX-GENERATION]'
            MOVE 1000 TO RETURN-CODE
            GOBACK
