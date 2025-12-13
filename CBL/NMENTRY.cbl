@@ -6,8 +6,6 @@
        DATA DIVISION.
        WORKING-STORAGE SECTION.
        COPY WSSCRN.
-       01 FUNCTION-KEYS REDEFINES KEYBOARD-STATUS PIC 9(4).
-          88 F1-PRESSED                  VALUE 1001.
        01 WORK-VARIABLES.
           03 WS-COUNTER           PIC 9(2)  VALUE ZEROS.
           03 WS-NUM-SPACES        PIC 9(2)  VALUE ZEROS.
@@ -23,12 +21,13 @@
       *---------------------BEGIN-PAN2SCR-------------------
        01 SC-NAME              PIC X(40) VALUE SPACES.
        01 SC-E-MAIL            PIC X(30) VALUE SPACES.
-       01 OUTPUT-FIELDS.
-       03 SC-NUM-FIELDS        PIC 9 VALUE ZEROS.
-       03 SC-LAST              PIC X(30) VALUE SPACES.
-       03 SC-MIDDLE            PIC X(30) VALUE SPACES.
-       03 SC-FIRST             PIC X(30) VALUE SPACES.
-       03 SC-MESSAGE           PIC X(60) VALUE SPACES.
+       01 SC-OUTPUT-FIELDS.
+           03 SC-NUM-FIELDS        PIC 9(2) VALUE ZEROS.
+           03 SC-LENGTH            PIC 9(2) VALUE ZEROS.
+           03 SC-LAST              PIC X(30) VALUE SPACES.
+           03 SC-MIDDLE            PIC X(30) VALUE SPACES.
+           03 SC-FIRST             PIC X(30) VALUE SPACES.
+           03 SC-MESSAGE           PIC X(60) VALUE SPACES.
       *-----------------------------------------------------
        SCREEN SECTION.
        01 NMENTRY-SCREEN
@@ -48,26 +47,31 @@
                                REQUIRED
                                USING SC-E-MAIL.
           03 LINE 09 COLUMN 03 VALUE 'Num Fields:'.
-          03 LINE 09 COLUMN 15 PIC 9
+          03 LINE 09 COLUMN 15 PIC 9(2)
                                REVERSE-VIDEO
                                FROM SC-NUM-FIELDS.
-          03 LINE 10 COLUMN 09 VALUE 'Last:'.
-          03 LINE 10 COLUMN 15 PIC X(30)
+          03 LINE 10 COLUMN 07 VALUE 'Length:'.
+          03 LINE 10 COLUMN 15 PIC 9(2)
                                REVERSE-VIDEO
-                               FROM SC-LAST.
-          03 LINE 11 COLUMN 07 VALUE 'Middle:'.
+                               FROM SC-LENGTH.
+          03 LINE 11 COLUMN 09 VALUE 'Last:'.
           03 LINE 11 COLUMN 15 PIC X(30)
                                REVERSE-VIDEO
-                               FROM SC-MIDDLE.
-          03 LINE 12 COLUMN 08 VALUE 'First:'.
+                               FROM SC-LAST.
+          03 LINE 12 COLUMN 07 VALUE 'Middle:'.
           03 LINE 12 COLUMN 15 PIC X(30)
                                REVERSE-VIDEO
+                               FROM SC-MIDDLE.
+          03 LINE 13 COLUMN 08 VALUE 'First:'.
+          03 LINE 13 COLUMN 15 PIC X(30)
+                               REVERSE-VIDEO
                                FROM SC-FIRST.
-          03 LINE 19 COLUMN 06 VALUE 'Message:'.
-          03 LINE 19 COLUMN 15 PIC X(60)
+          03 LINE 20 COLUMN 06 VALUE 'Message:'.
+          03 LINE 20 COLUMN 15 PIC X(60)
                                HIGHLIGHT
                                FOREGROUND-COLOR 4
                                FROM SC-MESSAGE.
+          03 LINE 22 COLUMN 01 VALUE 'F1 - Exit'.
       *----------------------END-PAN2SCR--------------------
        PROCEDURE DIVISION.
        NAME-ENTRY-START.
@@ -88,7 +92,7 @@
        PROCESS-DATA.
       * --- INIT THE WORKING FIELDS
            INITIALIZE WORK-VARIABLES
-           INITIALIZE OUTPUT-FIELDS
+           INITIALIZE SC-OUTPUT-FIELDS
            IF SC-NAME > SPACES
                PERFORM PROCESS-NAME
            ELSE
@@ -114,6 +118,7 @@
            END-IF
            .
        PROCESS-VALID-NAME.
+           PERFORM CALC-LENGTH-OF-NAME
            PERFORM VARYING FIELD-IDX
                    FROM 1 BY 1
                    UNTIL FIELD-IDX > 3
@@ -126,6 +131,14 @@
            IF NUM-FIELDS > 2
                MOVE FIELD(2) TO SC-MIDDLE
            END-IF
+           .
+       CALC-LENGTH-OF-NAME.
+           PERFORM WITH TEST AFTER VARYING SC-LENGTH
+                   FROM LENGTH OF SC-NAME BY -1
+                   UNTIL SC-NAME(SC-LENGTH:1) > SPACE
+                         OR SC-LENGTH = ZEROS
+               CONTINUE
+           END-PERFORM
            .
       * --- CONVERT E-MAIL TO LOWERCASE --------------------
         PROCESS-E-MAIL.

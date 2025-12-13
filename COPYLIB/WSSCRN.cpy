@@ -2,3 +2,4 @@
            03 CURSOR-ROW    PIC 9(3) VALUE 1.
            03 CURSOR-COLUMN PIC 9(3) VALUE 1.
        01 KEYBOARD-STATUS   PIC 9(4).
+           88 F1-PRESSED             VALUE 1001.

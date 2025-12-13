@@ -1,5 +1,7 @@
 #
 # History:
+# 251213AP  moved WSSCRN to the beginning of DATA DIVISION
+#           group output fields into SC-OUTPUT-FIELDS
 # 251211AP  screen options for fields also
 # 251201AP  MEMBER var
 # 251129AP  remove ':' from field names, 'o' marks field read-only
@@ -16,7 +18,8 @@ BEGIN \
   n = index(PRG, "/"); if (n) PRG = substr(PRG, n+1);
 
   # fields[x] = fld^fmt
-  nfields = 0;
+  # outfields[x] = fld^fmt
+  nfields = 0; noutfields = 0;
   # scrlines[x] = line
   nscrlines = 0;
 
@@ -148,9 +151,13 @@ function emit(trig, s ,fld,fmt)
         if ("r" in scropt)
             scrlines[nscrlines++] = sprintf("%31sREQUIRED\n","");
         using = "USING";
-        if ("o" in scropt) using ="FROM";
+        if ("o" in scropt) {
+            using ="FROM";
+            outfields[noutfields++] = fld "^" fmt;
+        } else {
+            fields[nfields++] = fld "^" fmt;
+        }
         scrlines[nscrlines++] = sprintf("%31s%s %s.\n","",using,fld);
-        fields[nfields++] = fld "^" fmt;
     } else {
         s = quote(getscropt(s));
         if (scropt["any"]) dot = "";
@@ -214,8 +221,8 @@ END \
     printf "      *-----------------------------------------------------\n";
     printf "       DATA DIVISION.\n";
     printf "       WORKING-STORAGE SECTION.\n";
-    printf "      *---------------------BEGIN-PAN2SCR-------------------\n";
     printf "       COPY WSSCRN.\n";
+    printf "      *---------------------BEGIN-PAN2SCR-------------------\n";
     for (x = 0; x < nfields; x++) {
         n = split(fields[x],parts,"^");
         fld = parts[1]; fmt = parts[2];
@@ -223,6 +230,16 @@ END \
         if ("X" == substr(fmt,1,1)) blank = "SPACES";
         else blank = "ZEROS";
         printf "       01 %-20s PIC %s VALUE %s.\n", fld, fmt, blank;
+    }
+    if (noutfields)
+        printf "       01 SC-OUTPUT-FIELDS.\n";
+    for (x = 0; x < noutfields; x++) {
+        n = split(outfields[x],parts,"^");
+        fld = parts[1]; fmt = parts[2];
+        fmt = scr2dat(fmt);
+        if ("X" == substr(fmt,1,1)) blank = "SPACES";
+        else blank = "ZEROS";
+        printf "           03 %-20s PIC %s VALUE %s.\n", fld, fmt, blank;
     }
     printf "      *-----------------------------------------------------\n";
     printf "       SCREEN SECTION.\n"; printf "       01 %s-SCREEN\n", PRG;

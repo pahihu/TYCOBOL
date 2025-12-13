@@ -10,8 +10,14 @@
        DATE-WRITTEN. 2025-12-04.
        DATA DIVISION.
        WORKING-STORAGE SECTION.
-       01 WORLD-WIDTH           PIC 9(3)   BINARY VALUE 120.
-       01 CENTER-POS            PIC 9(3)   BINARY VALUE 60.
+      * -O2
+      * COMP    1.40s
+      * COMP    2.47s
+      * COMP-3  3.47s
+      * -g -d
+      * COMP    2.96s
+       01 WORLD-WIDTH           PIC 9(3)   COMP VALUE 120.
+       01 CENTER-POS            PIC 9(3)   COMP VALUE 60.
        01 WORLD-VIEW.
           03 DISP-GENERATION    PIC Z(4)9  VALUE ZEROS.
           03 FILLER             PIC X      VALUE '.'.
@@ -28,23 +34,23 @@
        01 FILLER.
           03 PAST-WORLD-STATE   OCCURS 16384 TIMES.
              05 PAST-STATE      OCCURS    4 TIMES
-                                PIC 9(10)  BINARY VALUE ZERO.
+                                PIC 9(10)  COMP VALUE ZERO.
        01 CURRENT-WORLD-STATE.
           03 CURRENT-STATE      OCCURS   4 TIMES
-                                PIC 9(10)  BINARY VALUE ZERO.
+                                PIC 9(10)  COMP VALUE ZERO.
        01 NEXT-WORLD.
           03 NEXT-CELL          OCCURS 120 TIMES
                                 PIC X      VALUE SPACE.
              88 NEXT-DEAD                  VALUE ' '.
-       01 HP                    PIC 9(1)   BINARY VALUE ZERO.
-       01 GENERATION-IDX        PIC 9(5)   BINARY VALUE ZERO.
-       01 GENERATION            PIC 9(5)   BINARY VALUE ZERO.
-       01 PREV-GENERATION       PIC 9(5)   BINARY VALUE ZERO.
-       01 MAX-GENERATION        PIC 9(5)   BINARY VALUE 60.
-       01 POS                   PIC 9(3)   BINARY VALUE ZERO.
-       01 I                     PIC 9(3)   BINARY VALUE ZERO.
-       01 J                     PIC 9(3)   BINARY VALUE ZERO.
-       01 RULE                  PIC 9(3)   BINARY VALUE ZERO.
+       01 HP                    PIC 9(1)   COMP VALUE ZERO.
+       01 GENERATION-IDX        PIC 9(5)   COMP VALUE ZERO.
+       01 GENERATION            PIC 9(5)   COMP VALUE ZERO.
+       01 PREV-GENERATION       PIC 9(5)   COMP VALUE ZERO.
+       01 MAX-GENERATION        PIC 9(5)   COMP VALUE 60.
+       01 POS                   PIC 9(3)   COMP VALUE ZERO.
+       01 I                     PIC 9(3)   COMP VALUE ZERO.
+       01 J                     PIC 9(3)   COMP VALUE ZERO.
+       01 RULE                  PIC 9(3)   COMP VALUE ZERO.
        01 RULE-PATTERNS.
           03 PATTERN            OCCURS   8 TIMES
                                 PIC 9      VALUE ZERO.

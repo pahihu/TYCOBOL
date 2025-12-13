@@ -1,0 +1,22 @@
+#!/bin/bash
+PRG=cob2o
+VERSION=251213
+if [ $# -ne 1 ];
+then
+  echo "usage: cob2 <member>"
+  exit 1
+fi
+#
+/usr/bin/which cobc >/dev/null 2>&1 || source $COBENV
+#
+BASENM=$(basename $1 .cbl)
+
+source $TYCOBOL/JCL/tycobol.env
+
+
+XOPT="-fdefault-colseq=EBCDIC -fdefaultbyte=0 -fdebugging-line -fno-ec=all -fec=data -fec=size"
+OPT="-fsign=EBCDIC -fno-gen-c-decl-static-call -fsingle-quote -ftsymbols -ftcmd -fmove-noninteger-to-alphanumeric=error -O2 -fno-ec=EC-ALL -fec=EC-DATA -fec=EC-SIZE"
+
+cobc -I $CPY -ext cpy --conf=$CONF --save-temps=$SAVTMP $OPT -Wall -X -T $LST -o $OUT $INP
+
+banner STOP
