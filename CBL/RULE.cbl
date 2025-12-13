@@ -251,7 +251,7 @@
            .
       *-----------------------------------------------------------------
        MARK-CELL.
-           IF TRANSITION AND HP NOT = 0
+           IF TRANSITION
                MOVE HP TO TRANS-CELL(POS)
            END-IF
            IF BORN(HP + 1)
