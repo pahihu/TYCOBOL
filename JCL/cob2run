@@ -5,5 +5,8 @@ PRG=$1
 shift
 
 DIR=$PWD
-export COB_LIBRARY_PATH=$DIR/LOADLIB:$DYLD_LIBRARY_PATH
-exec cobcrun -c $DIR/JCL/cob2_runtime.cfg $PRG $*
+if [ -z "$COB_LIBRARY_PATH" ];
+then
+  export COB_LIBRARY_PATH=$DIR/LOADLIB:$DYLD_LIBRARY_PATH
+fi
+cobcrun -c $DIR/JCL/cob2_runtime.cfg $PRG $*
